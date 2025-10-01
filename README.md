@@ -2,6 +2,9 @@ Mailbox
 Mailbox is a web application that allows users to authenticate via Google OAuth, view a list of mock emails, classify them into categories (e.g., Marketing, Important, Other), mark emails as read/unread, and log out. The backend is built with Node.js, Express, and MongoDB, using Passport for authentication and JWT for API security. The frontend is a React application running on Vite, providing a user-friendly interface to interact with emails.
 Features
 
+LiveDemo- https://email-classifier-pi.vercel.app/
+
+
 Google OAuth Login: Authenticate users via Google OAuth 2.0.
 Email Listing: Display mock emails stored in MongoDB for the authenticated user.
 Email Classification: Classify emails based on content (e.g., "sale" → Marketing, "urgent" → Important).
