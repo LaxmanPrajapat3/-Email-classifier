@@ -108,7 +108,15 @@ const Home = () => {
               <p className="font-semibold text-gray-800 truncate">
                 {email.subject}
               </p>
-              <p className="text-sm text-gray-600">{email.tag}</p>
+              <p  className={`text-sm font-medium ${
+    email.tag === "Important"
+      ? "text-red-500"
+      : email.tag === "Marketing"
+      ? "text-green-500"
+      : email.tag === "Other"
+      ? "text-blue-500"
+      : "text-gray-500" // default
+  }`}>{email.tag}</p>
             </motion.div>
           ))
         )}
@@ -154,9 +162,21 @@ const Home = () => {
               {selectedEmail.subject}
             </h3>
             <p className="text-gray-700 mb-4">{selectedEmail.body}</p>
-            <p className="text-sm text-gray-500">
-              📌 Tag: <span className="font-medium">{selectedEmail.tag}</span>
-            </p>
+            
+            <p
+  className={`text-sm font-medium ${
+    selectedEmail.tag === "Important"
+      ? "text-red-500"
+      : selectedEmail.tag === "Marketing"
+      ? "text-green-500"
+      : selectedEmail.tag === "Other"
+      ? "text-blue-500"
+      : "text-gray-500" // default
+  }`}
+>
+  {selectedEmail.tag}
+</p>
+
           </motion.div>
         ) : (
           <p className="text-center text-gray-500 mt-20">
