@@ -1,140 +1,169 @@
+import React, { useEffect, useState } from "react";
+import axios from "axios";
+import { useNavigate } from "react-router-dom";
+import { motion } from "framer-motion";
+import { FiLogOut } from "react-icons/fi";
 
-import React, { useEffect, useState } from 'react';
-import axios from 'axios';
-import { useNavigate } from 'react-router-dom';
-
-const  backendurl=import.meta.env.VITE_BACKEND_URL;
+const backendurl = import.meta.env.VITE_BACKEND_URL;
 
 const Home = () => {
-
-
-
   const [emails, setEmails] = useState([]);
   const [selectedEmail, setSelectedEmail] = useState(null);
   const [numToClassify, setNumToClassify] = useState(1);
-  const [error, setError] = useState(null); // Added for error display
+  const [error, setError] = useState(null);
   const navigate = useNavigate();
 
   useEffect(() => {
-    const token = localStorage.getItem('token');
-    // console.log('Token in Home.js:', token); // Debug token
+    const token = localStorage.getItem("token");
     if (!token) {
-      console.log('No token found, redirecting to /');
-      return navigate('/');
+      return navigate("/");
     }
 
-    axios.get(`${backendurl}/emails`, {
-      headers: { Authorization: `Bearer ${token}` }
-    })
-      .then(res => {
-        console.log('Emails fetched:', res.data); // Debug response
-        setEmails(res.data);
+    axios
+      .get(`${backendurl}/emails`, {
+        headers: { Authorization: `Bearer ${token}` },
       })
-      .catch(err => {
-        console.error('Error fetching emails:', err.response?.data || err.message); // Debug error
-        setError(err.response?.data?.error || 'Failed to fetch emails');
-        navigate('/'); // Redirect on error
+      .then((res) => setEmails(res.data))
+      .catch((err) => {
+        setError(err.response?.data?.error || "Failed to fetch emails");
+        navigate("/");
       });
   }, [navigate]);
 
-
   const classifyEmails = () => {
-    const token = localStorage.getItem('token');
-    if (!token) {
-      console.log('No token for classify, redirecting to /');
-      return navigate('/');
-    }
+    const token = localStorage.getItem("token");
+    if (!token) return navigate("/");
 
-    axios.post(`${backendurl}/classify`, { numEmails: numToClassify }, {
-      headers: { Authorization: `Bearer ${token}` }
-    })
-      .then(res => {
-        console.log('Emails classified:', res.data.emails); // Debug response
+    axios
+      .post(
+        `${backendurl}/classify`,
+        { numEmails: numToClassify },
+        { headers: { Authorization: `Bearer ${token}` } }
+      )
+      .then((res) => {
         setEmails(res.data.emails);
-        setError(null); // Clear any previous errors
+        setError(null);
       })
-      .catch(err => {
-        console.error('Error classifying emails:', err.response?.data || err.message); // Debug error
-        setError(err.response?.data?.error || 'Failed to classify emails');
+      .catch((err) => {
+        setError(err.response?.data?.error || "Failed to classify emails");
       });
-
-    
   };
-    const handleLogout = () => {
-    axios.get(`${backendurl}/logout`, { withCredentials: true })
-      .then(res => {
-        console.log('Home.js: Logout response:', res.data); // Debug
-        localStorage.removeItem('token');
-        navigate('/');
+
+  const handleLogout = () => {
+    axios
+      .get(`${backendurl}/logout`, { withCredentials: true })
+      .then(() => {
+        localStorage.removeItem("token");
+        navigate("/");
       })
-      .catch(err => {
-        console.error('Home.js: Logout error:', err.response?.data || err.message); // Debug
-        localStorage.removeItem('token'); // Clear token even if API fails
-        navigate('/');
+      .catch(() => {
+        localStorage.removeItem("token");
+        navigate("/");
       });
   };
 
   return (
-    <div className="flex h-screen bg-gray-100">
-      {/* Display error if present */}
+    <div className="flex flex-col md:flex-row h-screen bg-gradient-to-br from-gray-50 via-white to-gray-100">
+      {/* Error Banner */}
       {error && (
-        <div className="w-full p-4 bg-red-100 text-red-700">
-          Error: {error}
-        </div>
+        <motion.div
+          initial={{ y: -50, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          className="w-full p-3 bg-red-100 text-red-700 text-center shadow-md"
+        >
+          ⚠️ {error}
+        </motion.div>
       )}
-      {/* Left: Email List */}
-      <div className="w-1/3 bg-white border-r p-4 overflow-y-auto">
-        <h2 className="text-xl mb-4">Emails</h2>
-        <button
-            onClick={handleLogout}
-            className="bg-green-500 text-white px-4 py-2 rounded"
-          >
-            Logout
-          </button>
 
+      {/* Left Sidebar */}
+      <motion.div
+        initial={{ x: -50, opacity: 0 }}
+        animate={{ x: 0, opacity: 1 }}
+        className="w-full md:w-1/3 bg-white border-r shadow-md p-4 overflow-y-auto"
+      >
+        <div className="flex justify-between items-center mb-4">
+          <h2 className="text-xl font-bold text-gray-800">📩 Emails</h2>
+          <button
+            onClick={handleLogout}
+            className="flex items-center gap-2 bg-red-500 hover:bg-red-600 text-white px-3 py-1.5 rounded-md shadow transition"
+          >
+            <FiLogOut /> Logout
+          </button>
+        </div>
 
         {emails.length === 0 && !error ? (
-          <p className="text-gray-500">Loading emails...</p>
+          <p className="text-gray-500 text-center">Loading emails...</p>
         ) : (
           emails.map((email, idx) => (
-            <div
+            <motion.div
               key={idx}
-              className="p-2 border-b cursor-pointer hover:bg-gray-100"
+              whileHover={{ scale: 1.02 }}
+              className={`p-3 mb-2 rounded-lg cursor-pointer transition ${
+                selectedEmail?.subject === email.subject
+                  ? "bg-blue-100 border border-blue-400"
+                  : "bg-gray-50 hover:bg-gray-100 border"
+              }`}
               onClick={() => setSelectedEmail(email)}
             >
-              <p className="font-bold">{email.subject}</p>
+              <p className="font-semibold text-gray-800 truncate">
+                {email.subject}
+              </p>
               <p className="text-sm text-gray-600">{email.tag}</p>
-            </div>
+            </motion.div>
           ))
         )}
-      </div>
-      {/* Right: Email Preview */}
-      <div className="w-2/3 p-4">
-        <div className="mb-4 flex items-center">
+      </motion.div>
+
+      {/* Right Email Preview */}
+      <motion.div
+        initial={{ x: 50, opacity: 0 }}
+        animate={{ x: 0, opacity: 1 }}
+        className="flex-1 p-6 flex flex-col"
+      >
+        {/* Classify Controls */}
+        <div className="flex items-center gap-2 mb-4">
           <select
-            className="mr-2 p-2 border rounded"
+            className="p-2 border rounded-md shadow-sm"
             value={numToClassify}
-            onChange={e => setNumToClassify(Number(e.target.value))}
+            onChange={(e) => setNumToClassify(Number(e.target.value))}
           >
-            {[1, 2, 3, 5, 10,15,20].map(n => <option key={n} value={n}>{n}</option>)}
+            {[1, 2, 3, 5, 10, 15, 20].map((n) => (
+              <option key={n} value={n}>
+                {n}
+              </option>
+            ))}
           </select>
-          <button
+          <motion.button
+            whileTap={{ scale: 0.95 }}
             onClick={classifyEmails}
-            className="bg-green-500 text-white px-4 py-2 rounded"
+            className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-md shadow-md transition"
           >
             Classify
-          </button>
+          </motion.button>
         </div>
+
+        {/* Email Preview */}
         {selectedEmail ? (
-          <div className="bg-white p-4 rounded shadow">
-            <h3 className="text-lg font-bold">{selectedEmail.subject}</h3>
-            <p>{selectedEmail.body}</p>
-            <p className="text-sm text-gray-600">Tag: {selectedEmail.tag}</p>
-          </div>
+          <motion.div
+            key={selectedEmail.subject}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="bg-white rounded-lg shadow-md p-6"
+          >
+            <h3 className="text-xl font-bold text-gray-800 mb-2">
+              {selectedEmail.subject}
+            </h3>
+            <p className="text-gray-700 mb-4">{selectedEmail.body}</p>
+            <p className="text-sm text-gray-500">
+              📌 Tag: <span className="font-medium">{selectedEmail.tag}</span>
+            </p>
+          </motion.div>
         ) : (
-          <p className="text-center text-gray-500">Select an email to preview</p>
+          <p className="text-center text-gray-500 mt-20">
+            Select an email to preview
+          </p>
         )}
-      </div>
+      </motion.div>
     </div>
   );
 };
